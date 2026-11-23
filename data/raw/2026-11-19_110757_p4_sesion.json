@@ -1,0 +1,22 @@
+{
+ "paciente": "p4",
+ "inicio": "2026-11-19T11:07:57-0600",
+ "fin": "2026-11-19T11:09:31-0600",
+ "fs": 1000,
+ "muestras": 94365,
+ "duracion_s": 94.365,
+ "unidades": "cuentas de 10 bits (0-1023); voltios = cuentas / 1023 * vref",
+ "vref": 1.1,
+ "umbral": [
+  null,
+  null
+ ],
+ "tiros": [
+  0,
+  20
+ ],
+ "canales": {
+  "canal1": "equipo local",
+  "canal2": "equipo rival"
+ }
+}
