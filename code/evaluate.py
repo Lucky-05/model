@@ -24,6 +24,7 @@ def row(name, s):
             f"| {s['rest']:.0%} ({s['tn']}/{s['tn'] + s['fp']}) |")
 
 train, test = recordings("train"), recordings("test")
+P6 = "2026-11-19_112400_p6"          # excluded after the test was opened; shown apart
 data = {n: windows(n) for n in train + test}
 stack = lambda names: (np.vstack([data[n][0] for n in names]), np.concatenate([data[n][1] for n in names]))
 HEAD = "| Recording | Windows | Accuracy | Balanced accuracy | Movement found | Rest found |\n|---|---|---|---|---|---|"
@@ -77,7 +78,7 @@ for a, n in zip(np.atleast_1d(ax), tl):
     a.set_title(f"Recording {n[-2:]}{' (excluded)' if n == P6 else ' (test)'}: every window of 0.25 s"); a.set_ylabel("counts"); a.legend(fontsize=7, loc="upper right", ncol=3)
 np.atleast_1d(ax)[-1].set_xlabel("seconds"); fig.tight_layout(); fig.savefig(os.path.join(ROOT, "figures", "results_test_timeline.png"), dpi=130)
 
-P6 = "2026-11-19_112400_p6"; F6, L6 = windows(P6); s6 = scores(L6, model.predict(F6))
+F6, L6 = windows(P6); s6 = scores(L6, model.predict(F6))
 out += ["## 4. Recording p6, excluded after the test was opened", "", HEAD, row("p6", s6), row("p5 + p6", scores(np.concatenate([Le, L6]), np.concatenate([pe, model.predict(F6)]))), "",
         "p6 was a test recording when we opened the test on 2026-11-23. After seeing it we took it out: its rest level is about 3.5 counts (0.6 to 2.1 in the others), and the board marked only 2 of about 12 visible contractions, so its labels are wrong. We show its score here so that nothing is hidden. Taking a recording out after seeing the test makes the test score look better than a fair one.", ""]
 out += ["## What this shows", "",
