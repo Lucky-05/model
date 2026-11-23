@@ -1,6 +1,6 @@
 # Decisions about what comes next
 
-We chose with the training recordings only (p2, p3, p4). The test recordings (p5, p6) are still closed.
+We chose with the training recordings only (p2, p3, p4). The test recordings (p5, p6) were opened once, after these choices, on 2026-11-23 (`RESULTS.md`).
 The choices below were proposed by our AI tool from the numbers of `code/train_model.py`. TODO(team): rewrite each "Reason" in your own words and add what you do not understand yet.
 
 ## 7. Features
