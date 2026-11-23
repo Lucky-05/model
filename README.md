@@ -16,7 +16,7 @@ We measure one person. In the data that person has the code P01. The folder name
 ## The six parts
 
 ### 1. Data acquisition
-6 recordings, 524 s, 74 contractions detected by the board, 1 person, 1 session, all on 2026-11-19. Each channel of the board is one muscle: p1 has its signal on channel 1, p2 to p6 on channel 2. Our own amplifier with an analog band-pass filter, read by an ESP32 at 1000 samples per second. The signal is raw, not smoothed. TODO(team): electrodes, distance, the muscle of each channel.
+6 recordings, 524 s, 1 person, 1 session, all on 2026-11-19. 38 contractions of about 3 s in the four recordings we use (p2: 3, p3: 11, p4: 10, p5: 14; `code/count_contractions.py`). Our goal was 50; p6 has about 12 more that we do not use. The board wrote 74 `KICK` events, up to 3 per contraction. Each channel of the board is one muscle: p1 has its signal on channel 1, p2 to p6 on channel 2. Our own amplifier with an analog band-pass filter, read by an ESP32 at 1000 samples per second. The signal is raw, not smoothed. TODO(team): electrodes, distance, the muscle of each channel.
 
 **Evidence:** `data/raw/` (6 recordings, 4 files each), `data/metadata.csv` (6 rows).
 
@@ -39,12 +39,12 @@ Result: 74 of 74 windows rejected, all for samples at 0. The amplifier had no of
 **Evidence:** `QUALITY-REPORT.md`, `code/check_quality.py`.
 
 ### 6. Fair split
-By time: p2, p3 and p4 train (138 movement windows, 531 rest windows of 0.25 s). p5 and p6 test. We opened them once, on 2026-11-23, with `code/evaluate.py`; the result is in `RESULTS.md`. p1 is not used for the model because it is the other channel (another muscle); we decided this after a first validation inside the training set, never with the test set. No recording is in both sets, and we do not shuffle windows of one recording between them. Limit: the six recordings share one electrode placement, so this split does not test "new electrodes". That test needs the new sessions.
+By time: p2, p3 and p4 train (138 movement windows, 531 rest windows of 0.25 s). p5 tests. p5 and p6 were both test recordings when we opened the test, once, on 2026-11-23 (`RESULTS.md`). After that we took p6 out, because its rest level and its labels are abnormal; `RESULTS.md` shows the score with and without it. p1 is not used for the model because it is the other channel (another muscle); we decided this after a first validation inside the training set, never with the test set. No recording is in both sets, and we do not shuffle windows of one recording between them. Limit: the six recordings share one electrode placement, so this split does not test "new electrodes". That test needs the new sessions.
 
 **Evidence:** the column `set` of `data/metadata.csv`.
 
 ## What comes next
-`DECISIONS.md` (features, model, route) and one file per member in `rationale/`. A first model is in `models/model.json`, made by `code/train_model.py`: one threshold on the size of the signal. Validated inside the training set by leaving one recording out, it is right 86 % of the time (balanced accuracy). This is not the final score: the labels come from the threshold detector of the board, and there is only one session. On the test recordings it is right 64 % of the time (87 % on p5, 56 % on p6); `RESULTS.md` explains why p6 fails.
+`DECISIONS.md` (features, model, route) and one file per member in `rationale/`. A first model is in `models/model.json`, made by `code/train_model.py`: one threshold on the size of the signal. Validated inside the training set by leaving one recording out, it is right 86 % of the time (balanced accuracy). This is not the final score: the labels come from the threshold detector of the board, and there is only one session. On the test recording p5 it is right 87 % of the time; with p6, which we excluded after seeing it, 64 %.
 
 ## How to repeat
 `PROTOCOL.md`. Code: `python3 code/check_quality.py` (standard library) and `python3 code/make_figures.py` and `python3 code/train_model.py` (numpy, scipy, matplotlib, scikit-learn).
