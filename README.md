@@ -44,7 +44,21 @@ By time: p2, p3 and p4 train (138 movement windows, 531 rest windows of 0.25 s).
 **Evidence:** the column `set` of `data/metadata.csv`.
 
 ## What comes next
-`DECISIONS.md` (features, model, route) and one file per member in `rationale/`. A first model is in `models/model.json`, made by `code/train_model.py`: one threshold on the size of the signal. Validated inside the training set by leaving one recording out, it is right 86 % of the time (balanced accuracy). This is not the final score: the labels come from the threshold detector of the board, and there is only one session. On the test recording p5 it is right 87 % of the time; with p6, which we excluded after seeing it, 64 %.
+`DECISIONS.md` (features, model, route) and one file per member in `rationale/`. The model is in `models/model.json`, made by `code/train_model.py`: "movement if the size of a window of 0.25 s is above 2.02 times the rest level of the recording". All the results are in `RESULTS.md`:
+
+| Stage | Recordings | Balanced accuracy |
+|---|---|---|
+| Training | p2, p3, p4 | 93 % |
+| Validation, leaving one recording out | p2, p3, p4 | 91 % |
+| Test | p5 | 91 % |
+
+Limits, said plainly: one session, labels from the threshold detector of the board and not from a cue, p6 taken out after we saw the test, and the model changed once after the test was opened (chosen with validation only). The final score needs new sessions.
 
 ## How to repeat
-`PROTOCOL.md`. Code: `python3 code/check_quality.py` (standard library) and `python3 code/make_figures.py` and `python3 code/train_model.py` (numpy, scipy, matplotlib, scikit-learn).
+`PROTOCOL.md`. Code: `python3 code/check_quality.py` (standard library) and `pip install -r requirements.txt`, then:
+- `python3 code/check_quality.py` the quality table (standard library only)
+- `python3 code/count_contractions.py` the contractions in each recording
+- `python3 code/make_figures.py` the two figures of the data
+- `python3 code/train_model.py` compares the models in validation and saves `models/model.json`
+- `python3 code/evaluate.py` training, validation and test: `RESULTS.md` and `figures/results_*.png`
+- `python3 code/predict.py data/raw/<file>_senal.csv` uses the model on one recording and lists its contractions

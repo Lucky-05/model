@@ -1,5 +1,5 @@
 {
- "model": "one threshold",
+ "model": "threshold on the size against rest",
  "trained_on": [
   "2026-11-19_101935_p2",
   "2026-11-19_105551_p3",
@@ -7,22 +7,11 @@
  ],
  "window_s": 0.25,
  "filters": "Butterworth 4 band-pass 20-450 Hz + notch 60 Hz Q30, zero phase",
- "rule": "movement if the mean absolute value of the window (counts of 10 bits) is above the threshold",
- "threshold_mav_counts": 2.928,
+ "rest_level": "median of the mean absolute value of all the 0.25 s windows of the recording (or of a calibration at rest)",
+ "rule": "movement if the mean absolute value of the window is above ratio x rest level",
+ "ratio": 2.021,
  "windows": {
   "movement": 138,
   "rest": 531
- },
- "alternative_logistic_regression": {
-  "features": [
-   "log(mean absolute value + 0.1)",
-   "log(waveform length + 0.1)"
-  ],
-  "coef": [
-   5.7577,
-   -2.8105
-  ],
-  "intercept": 12.3319,
-  "rule": "movement if coef[0]*f0 + coef[1]*f1 + intercept > 0"
  }
 }

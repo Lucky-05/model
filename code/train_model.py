@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
-"""First model: movement against rest. Uses ONLY the training recordings (set = train in
+"""Train the model: movement against rest. Uses ONLY the training recordings (set = train in
 data/metadata.csv). The test recordings are not read here.
 
 Needs numpy, scipy and scikit-learn.   Run from the repository root:  python3 code/train_model.py
 
 Each example is a window of 0.25 s of the active channel, after the filters of PROTOCOL.md.
-Features: log of the mean absolute value and log of the waveform length.
+Features of a window:
+  0  log of the mean absolute value (MAV), in counts
+  1  log of the waveform length
+  2  log of (MAV / rest level), where the rest level is the median MAV of the whole recording.
+     The person rests more than half of the time, so the median is the size of the signal at rest.
 Labels (no cue video on 19 Nov): movement = windows that touch [KICK-0.25 s, KICK+0.25 s] of the
 board; rest = windows more than 1.5 s away from every KICK; the rest of the signal has no label.
 Score: balanced accuracy (the mean of "movement found" and "rest found"), because there is more
@@ -39,25 +43,45 @@ def clean(x):
     b, a = signal.iirnotch(60, 30, fs=FS)
     return signal.filtfilt(b, a, y)
 
+def window_sizes(x):
+    """MAV and waveform length of every 0.25 s window of a raw signal, and its rest level."""
+    y = clean(x); nw = len(y) // WIN; w = y[:nw * WIN].reshape(nw, WIN)
+    mav = np.abs(w).mean(axis=1); wl = np.abs(np.diff(w, axis=1)).sum(axis=1)
+    return mav, wl, float(np.median(mav))
+
 def windows(name):
-    x, k = load(name); y = clean(x); F, L = [], []
-    for s in range(0, len(y) - WIN + 1, WIN):
-        d = np.min(np.abs(k - (s + WIN / 2))) if len(k) else 1e9
-        lab = 1 if d <= 250 + WIN / 2 else (0 if d > 1500 else None)
-        if lab is None: continue
-        w = y[s:s + WIN]
-        F.append([np.log(np.mean(np.abs(w)) + 0.1), np.log(np.sum(np.abs(np.diff(w))) + 0.1)]); L.append(lab)
-    return np.array(F), np.array(L)
+    """Features and labels of the labelled windows of one recording."""
+    x, k = load(name); mav, wl, rest = window_sizes(x)
+    mid = (np.arange(len(mav)) + 0.5) * WIN
+    d = np.array([np.min(np.abs(k - c)) for c in mid]) if len(k) else np.full(len(mav), 1e9)
+    lab = np.where(d <= 250 + WIN / 2, 1, np.where(d > 1500, 0, -1)); m = lab >= 0
+    return np.c_[np.log(mav + 0.1), np.log(wl + 0.1), np.log(mav / rest)][m], lab[m]
 
 class Threshold:
-    """Movement if the first feature is above one number: the middle between the class medians."""
+    """Movement if one feature is above one number: the middle between the class medians."""
+    def __init__(self, col): self.col = col
     def fit(self, F, L):
-        self.t = (np.median(F[L == 1, 0]) + np.median(F[L == 0, 0])) / 2; return self
-    def predict(self, F): return (F[:, 0] > self.t).astype(int)
+        self.t = (np.median(F[L == 1, self.col]) + np.median(F[L == 0, self.col])) / 2; return self
+    def predict(self, F): return (F[:, self.col] > self.t).astype(int)
 
-MODELS = {"one threshold": lambda: Threshold(),
-          "logistic regression": lambda: LogisticRegression(class_weight="balanced"),
-          "decision tree, depth 2": lambda: DecisionTreeClassifier(max_depth=2, class_weight="balanced", random_state=0)}
+class First2:
+    """A scikit-learn model that sees only the first two features."""
+    def __init__(self, m): self.m = m
+    def fit(self, F, L): self.m.fit(F[:, :2], L); return self
+    def predict(self, F): return self.m.predict(F[:, :2])
+
+MODELS = {"threshold on the size (counts)": lambda: Threshold(0),
+          "threshold on the size against rest": lambda: Threshold(2),
+          "logistic regression (size, waveform length)": lambda: First2(LogisticRegression(class_weight="balanced")),
+          "decision tree, depth 2 (size, waveform length)": lambda: First2(DecisionTreeClassifier(max_depth=2, class_weight="balanced", random_state=0))}
+CHOSEN = "threshold on the size against rest"      # the best in validation; see the table this script prints
+
+def validate(make, train, data):
+    per, yt, yp = {}, [], []
+    for out in train:
+        F = np.vstack([data[n][0] for n in train if n != out]); L = np.concatenate([data[n][1] for n in train if n != out])
+        p = make().fit(F, L).predict(data[out][0]); per[out] = (data[out][1], p); yt.append(data[out][1]); yp.append(p)
+    return per, np.concatenate(yt), np.concatenate(yp)
 
 if __name__ == "__main__":
     train = recordings("train"); data = {n: windows(n) for n in train}
@@ -66,23 +90,15 @@ if __name__ == "__main__":
     print("\nLeave one recording out (balanced accuracy):")
     print("| Model | " + " | ".join(n[-2:] for n in train) + " | all held-out windows |"); print("|---|" + "---|" * (len(train) + 1))
     for label, make in MODELS.items():
-        cells, yt, yp = [], [], []
-        for out in train:
-            Ft = np.vstack([data[n][0] for n in train if n != out]); Lt = np.concatenate([data[n][1] for n in train if n != out])
-            p = make().fit(Ft, Lt).predict(data[out][0])
-            cells.append(f"{balanced_accuracy_score(data[out][1], p):.0%}"); yt.append(data[out][1]); yp.append(p)
-        print(f"| {label} | " + " | ".join(cells) + f" | {balanced_accuracy_score(np.concatenate(yt), np.concatenate(yp)):.0%} |")
+        per, yt, yp = validate(make, train, data)
+        print(f"| {label} | " + " | ".join(f"{balanced_accuracy_score(*per[n]):.0%}" for n in train) + f" | {balanced_accuracy_score(yt, yp):.0%} |")
     F = np.vstack([data[n][0] for n in train]); L = np.concatenate([data[n][1] for n in train])
-    m = LogisticRegression(class_weight="balanced").fit(F, L)
-    t = Threshold().fit(F, L)
-    out = {"model": "one threshold", "trained_on": train, "window_s": WIN / FS,
+    m = MODELS[CHOSEN]().fit(F, L)
+    out = {"model": CHOSEN, "trained_on": train, "window_s": WIN / FS,
            "filters": "Butterworth 4 band-pass 20-450 Hz + notch 60 Hz Q30, zero phase",
-           "rule": "movement if the mean absolute value of the window (counts of 10 bits) is above the threshold",
-           "threshold_mav_counts": round(float(np.exp(t.t) - 0.1), 3),
-           "windows": {"movement": int(L.sum()), "rest": int((L == 0).sum())},
-           "alternative_logistic_regression": {
-               "features": ["log(mean absolute value + 0.1)", "log(waveform length + 0.1)"],
-               "coef": [round(float(c), 4) for c in m.coef_[0]], "intercept": round(float(m.intercept_[0]), 4),
-               "rule": "movement if coef[0]*f0 + coef[1]*f1 + intercept > 0"}}
+           "rest_level": "median of the mean absolute value of all the 0.25 s windows of the recording (or of a calibration at rest)",
+           "rule": "movement if the mean absolute value of the window is above ratio x rest level",
+           "ratio": round(float(np.exp(m.t)), 3),
+           "windows": {"movement": int(L.sum()), "rest": int((L == 0).sum())}}
     json.dump(out, open(os.path.join(ROOT, "models", "model.json"), "w"), indent=1)
-    print("\nSaved models/model.json: threshold", out["threshold_mav_counts"], "counts")
+    print(f"\nSaved models/model.json: movement if size > {out['ratio']} x rest level")
