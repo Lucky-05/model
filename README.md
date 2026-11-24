@@ -1,6 +1,6 @@
 # Report 1: the data stage
 
-Course: M6 Machine Learning and IoT apps. Project: tell a leg muscle contraction from rest with one muscle signal, to control a penalty-kick game.
+Course: M6 Machine Learning and IoT apps. Project: tell a contraction of the hamstrings from rest with one muscle signal, to control a penalty-kick game.
 
 > Draft. Lines marked TODO(team) need facts that only the team knows. Search for "TODO" before the tag `v1-report`.
 
@@ -8,20 +8,20 @@ Course: M6 Machine Learning and IoT apps. Project: tell a leg muscle contraction
 
 | Member code | GitHub user | In charge of | AI tool |
 |---|---|---|---|
-| M01 | TODO | TODO | TODO |
-| M02 | TODO | TODO | TODO |
+| M01 | @Lucky-05 | recordings, code, quality check and first model | Claude Code |
+| M02 | TODO(team) | TODO(team) | TODO(team) |
 
 We measure one person. In the data that person has the code P01. The folder names p1 ... p6 are the six recordings of that person, in order of time.
 
 ## The six parts
 
 ### 1. Data acquisition
-6 recordings, 524 s, 1 person, 1 session, all on 2026-11-19. 38 contractions of about 3 s in the four recordings we use (p2: 3, p3: 11, p4: 10, p5: 14; `code/count_contractions.py`). Our goal was 50; p6 has about 12 more that we do not use. The board wrote 74 `KICK` events, up to 3 per contraction. Each channel of the board is one muscle: p1 has its signal on channel 1, p2 to p6 on channel 2. Our own amplifier with an analog band-pass filter, read by an ESP32 at 1000 samples per second. The signal is raw, not smoothed. TODO(team): electrodes, distance, the muscle of each channel.
+6 recordings, 524 s, 1 person, 1 session, all on 2026-11-19. 38 contractions of about 3 s in the four recordings we use (p2: 3, p3: 11, p4: 10, p5: 14; `code/count_contractions.py`). Our goal was 50; p6 has about 12 more that we do not use. The board wrote 74 `KICK` events, up to 3 per contraction. Each channel of the board is one muscle: channel 1 is the quadriceps and channel 2 the hamstrings. p1 has its signal on channel 1, p2 to p6 on channel 2. Our movement is the one of channel 2. Our own amplifier with an analog band-pass filter, read by an ESP32 at 1000 samples per second. The signal is raw, not smoothed. TODO(team): electrode type, distance between them, skin preparation, gain.
 
 **Evidence:** `data/raw/` (6 recordings, 4 files each), `data/metadata.csv` (6 rows).
 
 ### 2. Task
-TODO(team): the movement and the posture. Two classes: movement and rest.
+The person contracts the hamstrings of one leg, holds the contraction about 3 s, and relaxes. Two classes: movement and rest. TODO(team): the side, the posture and the exact movement of the leg.
 
 ### 3. Trial and cue timing
 On 19 Nov there was no cue video and no fixed timing: the person contracted when the game asked for a kick. The only time marks are the `KICK` events that the board wrote when its threshold detector fired. In p4 the contractions last about 3 s and repeat about every 8.6 s. TODO(team): the cue video and its seconds for the next recordings.

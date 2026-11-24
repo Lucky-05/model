@@ -2,9 +2,9 @@
 
 Written so that a person outside the group can repeat the recording. Lines marked TODO(team) are facts only the team knows.
 
-1. **Sensor and site.** Each channel of the board is one muscle (p1: channel 1; p2 to p6: channel 2). TODO(team): electrode type, distance between electrodes in cm, the muscle and side of each channel, position of the reference electrode, skin preparation, source for the position (for example the SENIAM recommendation for that muscle). Sensor: our own amplifier (pre-amplifier and analog band-pass filter). TODO(team): gain and the limits of the analog filter.
+1. **Sensor and site.** Each channel of the board is one muscle: channel 1 quadriceps (p1), channel 2 hamstrings (p2 to p6). TODO(team): electrode type, distance between electrodes in cm, the muscle and side of each channel, position of the reference electrode, skin preparation, source for the position (for example the SENIAM recommendation for that muscle). Sensor: our own amplifier (pre-amplifier and analog band-pass filter). TODO(team): gain and the limits of the analog filter.
 2. **Posture.** TODO(team).
-3. **Task.** TODO(team): the movement, and how long it is held. Two classes: movement and rest.
+3. **Task.** Contract the hamstrings and hold about 3 s, then relax. TODO(team): the exact movement of the leg. Two classes: movement and rest.
 4. **Trial.** On 19 Nov there was no fixed timing. The person contracted when the penalty game asked for a kick. In recording p4 the contractions last about 3 s and repeat about every 8.6 s. TODO(team): the timing of the cue video for the next recordings (rest, warning, movement, rest between).
 5. **Recording.** 6 recordings of 26 s to 130 s, 524 s in total, all on 2026-11-19 between 10:10 and 11:26.
 6. **Cue.** None on 19 Nov. TODO(team): `cue/cue-video.mp4`.

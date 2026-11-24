@@ -23,7 +23,7 @@ Total: 6 recordings, 524 s, 74 detected windows, 74 rejected, 0 kept.
 
 **Noise.** After the band-pass and the notch (see `PROTOCOL.md`), in windows of 0.25 s of the training recordings p3 and p4: median size at rest 1.85 and 0.71 counts, median size during movement 7.26 and 5.22 counts. See `figures/two_features.png`.
 
-**Outliers.** p1 has its signal on channel 1, all the others on channel 2. p2 is short (26 s) and p6 has only 2 detections in 102 s. p1 is the other channel, so another muscle; it is not used for the model. TODO(team): say what was different in p2 and p6.
+**Outliers.** p1 has its signal on channel 1, all the others on channel 2. p2 is short (26 s) and p6 has only 2 detections in 102 s. p1 is the other channel (quadriceps, not hamstrings); it is not used for the model. TODO(team): say what was different in p2 and p6.
 
 **What we do about it.** Both, in two steps:
 - Now, for the first version: we keep the recordings of 19 Nov and change the rule. The lower limit does not reject, because the signal rested there. The upper limit and gaps still reject. With this rule 0 of 74 windows are rejected. The model learns from a half-cut signal, and we say so.
