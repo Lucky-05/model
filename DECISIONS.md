@@ -26,7 +26,7 @@ The choices below were proposed by our AI tool from the numbers of `code/train_m
 **Not understood yet.** TODO(team)
 
 ## 9. Route
-**Chose.** The model runs in our Python program on the computer. The ESP32 sends the signal over USB; the program already saves each session with its metadata (person code, start, end, sampling rate, thresholds, events) in Supabase and in local CSV files. We add the answer of the model to that record.
-**Reason.** It needs the least new work and the record in the cloud already exists. Later the threshold is one number, so it can move to the ESP32.
-**Proof.** TODO(team): a screenshot of Supabase with one saved session.
+**Chose.** The model runs in our own software on the computer (`code/run_model.py`). The ESP32 sends the signal over USB to our Python bridge; the model reads a recorded file or the live signal, and saves one record per measurement in Supabase: date and time, person code, session, channel, sampling rate, the model and its number, the rest level, and each contraction found.
+**Reason.** The ESP32 already sends the signal to the computer and our project already saves sessions in Supabase, so this needed the least new work. The model is one number, so later it can move into the ESP32.
+**Proof.** `records/2026-11-24_230344_P01_S02.json` and its copy in Supabase (session `909d2c23-a1c5-4cdc-a87c-d3e9e0993acb`, 11 rows in `eventos`). TODO(team): a screenshot of Supabase showing it.
 **Not understood yet.** TODO(team)

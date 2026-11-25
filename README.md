@@ -65,6 +65,8 @@ No recording is in both sets, and we do not shuffle windows of one recording bet
 
 Limits: one person, two sessions, labels from the threshold detector of the board and not from a cue. The next step is a cue video and a third session that nobody has looked at.
 
+**The model runs and saves each measurement.** `code/run_model.py` runs on the computer, on a recorded file or live from the ESP32, and saves one record per measurement: date and time, person code, session, channel, sampling rate, the model and its number, the rest level, and every contraction found. The record goes to `records/` and to our cloud service (Supabase). Example: `records/2026-11-24_230344_P01_S02.json`, saved in Supabase as session `909d2c23-a1c5-4cdc-a87c-d3e9e0993acb` with 11 rows (1 `MODELO` with the metadata, 10 `CONTRACCION`). TODO(team): a screenshot of that record in Supabase, in `figures/`.
+
 ## How to repeat
 `PROTOCOL.md`. Code: `python3 code/check_quality.py` (standard library) and `pip install -r requirements.txt`, then:
 - `python3 code/check_quality.py` the quality table (standard library only)
@@ -73,3 +75,4 @@ Limits: one person, two sessions, labels from the threshold detector of the boar
 - `python3 code/train_model.py` compares the models in validation and saves `models/model.json`
 - `python3 code/evaluate.py` training, validation and test: `RESULTS.md` and `figures/results_*.png`
 - `python3 code/predict.py data/raw/<file>_senal.csv` uses the model on one recording and lists its contractions
+- `python3 code/run_model.py data/raw/<file>_senal.csv --person P01 --session S02 --upload` runs the model on one measurement and saves the record with its metadata in `records/` and in Supabase. With `--live 30` it reads 30 s from the board instead of a file

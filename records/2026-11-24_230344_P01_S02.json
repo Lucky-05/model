@@ -1,0 +1,74 @@
+{
+ "datetime": "2026-11-24T23:03:44-0600",
+ "person": "P01",
+ "session": "S02",
+ "source": "2026-11-24_205458_contracciones5_senal.csv",
+ "channel": "canal2",
+ "fs_hz": 1000,
+ "seconds": 74.1,
+ "model": "threshold on the size against rest",
+ "ratio": 2.443,
+ "window_s": 0.25,
+ "trained_on": [
+  "contracciones1",
+  "contracciones2",
+  "contracciones3",
+  "contracciones4"
+ ],
+ "rest_level_counts": 1.183,
+ "rest_level_from": "median of the measurement",
+ "contractions_found": 10,
+ "percent_of_time_in_movement": 30.4,
+ "contractions": [
+  {
+   "start_s": 13.75,
+   "end_s": 16.75,
+   "peak_size_over_rest": 7.3
+  },
+  {
+   "start_s": 20.0,
+   "end_s": 22.0,
+   "peak_size_over_rest": 8.8
+  },
+  {
+   "start_s": 26.0,
+   "end_s": 28.75,
+   "peak_size_over_rest": 6.2
+  },
+  {
+   "start_s": 31.75,
+   "end_s": 34.25,
+   "peak_size_over_rest": 10.4
+  },
+  {
+   "start_s": 37.5,
+   "end_s": 39.5,
+   "peak_size_over_rest": 7.8
+  },
+  {
+   "start_s": 42.75,
+   "end_s": 45.25,
+   "peak_size_over_rest": 9.6
+  },
+  {
+   "start_s": 48.75,
+   "end_s": 50.75,
+   "peak_size_over_rest": 6.9
+  },
+  {
+   "start_s": 54.25,
+   "end_s": 56.25,
+   "peak_size_over_rest": 7.3
+  },
+  {
+   "start_s": 59.5,
+   "end_s": 61.25,
+   "peak_size_over_rest": 6.5
+  },
+  {
+   "start_s": 65.5,
+   "end_s": 68.0,
+   "peak_size_over_rest": 6.7
+  }
+ ]
+}
