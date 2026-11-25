@@ -16,43 +16,54 @@ We measure one person. In the data that person has the code P01. The folder name
 ## The six parts
 
 ### 1. Data acquisition
-6 recordings, 524 s, 1 person, 1 session, all on 2026-11-19. 38 contractions of about 3 s in the four recordings we use (p2: 3, p3: 11, p4: 10, p5: 14; `code/count_contractions.py`). Our goal was 50; p6 has about 12 more that we do not use. The board wrote 74 `KICK` events, up to 3 per contraction. Each channel of the board is one muscle: channel 1 is the quadriceps and channel 2 the hamstrings. p1 has its signal on channel 1, p2 to p6 on channel 2. Our movement is the one of channel 2. Our own amplifier with an analog band-pass filter, read by an ESP32 at 1000 samples per second. The signal is raw, not smoothed. TODO(team): electrode type, distance between them, skin preparation, gain.
+12 recordings, 991 s, 1 person, 2 sessions (19 Nov and 24 Nov 2026). Our own amplifier with an analog band-pass filter, read by an ESP32 at 1000 samples per second. The signal is raw, not smoothed. Channel 1 is the quadriceps and channel 2 the hamstrings; our movement is the one of channel 2.
 
-**Evidence:** `data/raw/` (6 recordings, 4 files each), `data/metadata.csv` (6 rows).
+| Session | Date | Recordings we use | Contractions (`code/count_contractions.py`) |
+|---|---|---|---|
+| S01 | 2026-11-19 | p2, p3, p4, p5 | 3 + 11 + 10 + 14 = 38 |
+| S02 | 2026-11-24 | contracciones1 to contracciones5 | 10 + 1 + 15 + 15 + 10 = 51 |
+
+Not used: p1 (signal on the other channel), p6 (abnormal, see `RESULTS.md`), prueba2canales (a check of both channels, without labels). TODO(team): electrode type, distance between them, skin preparation, gain. TODO(team): confirm that S02 is the same person as S01.
+
+**Evidence:** `data/raw/` (12 recordings, 4 files each), `data/metadata.csv` (12 rows).
 
 ### 2. Task
-The person contracts the hamstrings of one leg, holds the contraction about 3 s, and relaxes. Two classes: movement and rest. TODO(team): the side, the posture and the exact movement of the leg.
+The person contracts the hamstrings of one leg, holds the contraction about 2.5 to 3.5 s, and relaxes. Two classes: movement and rest. TODO(team): the side, the posture and the exact movement of the leg.
 
 ### 3. Trial and cue timing
-On 19 Nov there was no cue video and no fixed timing: the person contracted when the game asked for a kick. The only time marks are the `KICK` events that the board wrote when its threshold detector fired. In p4 the contractions last about 3 s and repeat about every 8.6 s. TODO(team): the cue video and its seconds for the next recordings.
+There was no cue video. In S01 the person contracted when the game asked for a kick. In S02 the person kept a rhythm alone: about 2.5 s of contraction every 7 s (measured from the signal), 10 or 15 contractions per recording. The only time marks are the `KICK` events that the board wrote when its threshold detector fired, 1 to 3 per contraction. TODO(team): the cue video and its seconds for the next recordings.
 
-**Evidence:** `figures/one_recording_marked.png`, `data/raw/*_eventos.csv`.
+**Evidence:** `figures/one_recording_marked.png`, `figures/results_test_timeline.png`, `data/raw/*_eventos.csv`.
 
 ### 4. Sessions
-1 person, 1 session (S01): the six recordings are from one day, within 76 minutes, with the same electrode placement. This is less than the plan needs. Next: at least 3 more sessions on other days, each with new electrodes, the 1.65 V offset and a cue video.
+1 person, 2 sessions on 2 days, 5 days apart, with electrodes placed again. S01: 6 recordings within 76 minutes. S02: 6 recordings within 90 minutes. Between the sessions the circuit changed: an offset was added, the amplifier moved to a PCB, and the ESP32 range went from 0-1.1 V to 0-3.1 V. In S02 channel 1 was dead in contracciones1 to 5 because one ESP32 pin was damaged; the board was replaced before prueba2canales. TODO(team): one photo of the electrodes per session.
 
 ### 5. Cleaning
 Filters: band-pass Butterworth of order 4 from 20 to 450 Hz, then a notch at 60 Hz, both zero phase. Limits and sources in `PROTOCOL.md`.
 Rule to reject, written before any score: a sample at a limit of the converter (0 or 1023), or more than 1 % of samples missing.
-Result: 74 of 74 windows rejected, all for samples at 0. The amplifier had no offset on 19 Nov, so the lower half of the signal is cut in every recording. No sample reached 1023 and no recording has more than 0.7 % missing. Our choice: for this first version we keep the recordings and use a changed rule (the lower limit does not reject, because the signal rested there; the upper limit and gaps still reject: 0 of 74 rejected). For the next sessions we have added a 1.65 V offset to the circuit and changed the ESP32 range to 0-3.1 V, and the rule as written applies again.
+Result: S01, 74 of 74 windows rejected, all for samples at 0, because the amplifier had no offset and the lower half of the signal was cut. S02, 0 of 67 windows rejected: no sample at 0 or at 1023. For S01 we use a changed rule (the lower limit does not reject), and we say so. In S02 the signal still rests low (about 0.1 V, not 1.65 V), so part of the lower half is still cut although no sample reaches 0.
 
 **Evidence:** `QUALITY-REPORT.md`, `code/check_quality.py`.
 
 ### 6. Fair split
-By time: p2, p3 and p4 train (138 movement windows, 531 rest windows of 0.25 s). p5 tests. p5 and p6 were both test recordings when we opened the test, once, on 2026-11-23 (`RESULTS.md`). After that we took p6 out, because its rest level and its labels are abnormal; `RESULTS.md` shows the score with and without it. p1 is not used for the model because it is the other channel (another muscle); we decided this after a first validation inside the training set, never with the test set. No recording is in both sets, and we do not shuffle windows of one recording between them. Limit: the six recordings share one electrode placement, so this split does not test "new electrodes". That test needs the new sessions.
+Training: S02, contracciones1 to contracciones4 (165 movement windows and 737 rest windows of 0.25 s).
+Test A, same session: contracciones5, never used to train.
+Test B, another session: S01 (p2 to p5), another day and another electrode placement. This is the test the project asks for.
+No recording is in both sets, and we do not shuffle windows of one recording between them. Limit, said plainly: the recordings of S01 are not new to us. An earlier model was built and tested on them on 2026-11-23, and the idea of measuring the size against the rest level came from them. The model of this version was trained without them.
 
-**Evidence:** the column `set` of `data/metadata.csv`.
+**Evidence:** the columns `session` and `set` of `data/metadata.csv`.
 
 ## What comes next
-`DECISIONS.md` (features, model, route) and one file per member in `rationale/`. The model is in `models/model.json`, made by `code/train_model.py`: "movement if the size of a window of 0.25 s is above 2.02 times the rest level of the recording". All the results are in `RESULTS.md`:
+`DECISIONS.md` (features, model, route) and one file per member in `rationale/`. The model is in `models/model.json`, made by `code/train_model.py`: "movement if the size of a window of 0.25 s is above 2.44 times the rest level of the recording". All the results are in `RESULTS.md`:
 
 | Stage | Recordings | Balanced accuracy |
 |---|---|---|
-| Training | p2, p3, p4 | 93 % |
-| Validation, leaving one recording out | p2, p3, p4 | 91 % |
-| Test | p5 | 91 % |
+| Training | S02: contracciones1 to 4 | 92 % |
+| Validation, leaving one recording out | S02: contracciones1 to 4 | 91 % |
+| Test, same session | S02: contracciones5 | 95 % |
+| Test, another session | S01: p2 to p5 | 89 % |
 
-Limits, said plainly: one session, labels from the threshold detector of the board and not from a cue, p6 taken out after we saw the test, and the model changed once after the test was opened (chosen with validation only). The final score needs new sessions.
+Limits: one person, two sessions, labels from the threshold detector of the board and not from a cue. The next step is a cue video and a third session that nobody has looked at.
 
 ## How to repeat
 `PROTOCOL.md`. Code: `python3 code/check_quality.py` (standard library) and `pip install -r requirements.txt`, then:

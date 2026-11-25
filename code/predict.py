@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from train_model import ROOT, FS, WIN, window_sizes
 
 def predict(x, ratio, calibration_s=None):
-    mav, _, rest = window_sizes(x)
+    mav, _, rest, _ = window_sizes(x)
     if calibration_s: rest = float(np.median(mav[:max(1, int(calibration_s * FS / WIN))]))
     return mav / rest > ratio, mav, rest
 

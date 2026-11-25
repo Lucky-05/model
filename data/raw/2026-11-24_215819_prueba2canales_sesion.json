@@ -1,0 +1,22 @@
+{
+ "paciente": "prueba2canales",
+ "inicio": "2026-11-24T21:58:19-0600",
+ "fin": "2026-11-24T21:59:19-0600",
+ "fs": 1000,
+ "muestras": 59435,
+ "duracion_s": 59.435,
+ "unidades": "cuentas de 10 bits (0-1023); voltios = cuentas / 1023 * vref",
+ "vref": 3.1,
+ "umbral": [
+  null,
+  null
+ ],
+ "tiros": [
+  0,
+  0
+ ],
+ "canales": {
+  "canal1": "equipo local",
+  "canal2": "equipo rival"
+ }
+}

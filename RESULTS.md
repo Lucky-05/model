@@ -1,63 +1,71 @@
 # Results of the model
 
 Made with `python3 code/evaluate.py`.
-Model: movement if the size of a window of 0.25 s (its mean absolute value) is above 2.02 times the rest level of the recording.
+Model: movement if the size of a window of 0.25 s (its mean absolute value) is above 2.44 times the rest level of the recording.
 Balanced accuracy is the mean of "movement found" and "rest found". We use it because there is about 4 times more rest than movement.
 
-## 1. Training (the model sees these windows)
+## 1. Training (session S02, 24 Nov; the model sees these windows)
 
 | Recording | Windows | Accuracy | Balanced accuracy | Movement found | Rest found |
 |---|---|---|---|---|---|
-| p2 | 86 | 87% | 93% | 100% (6/6) | 86% (69/80) |
-| p3 | 332 | 97% | 92% | 85% (61/72) | 100% (260/260) |
-| p4 | 251 | 96% | 95% | 92% (55/60) | 97% (186/191) |
-| all | 669 | 95% | 93% | 88% (122/138) | 97% (515/531) |
+| contracciones1 | 273 | 92% | 95% | 100% (45/45) | 91% (207/228) |
+| contracciones2 | 59 | 100% | 100% | 100% (9/9) | 100% (50/50) |
+| contracciones3 | 299 | 91% | 90% | 88% (53/60) | 92% (219/239) |
+| contracciones4 | 271 | 91% | 90% | 88% (45/51) | 91% (201/220) |
+| all | 902 | 92% | 92% | 92% (152/165) | 92% (677/737) |
 
 ## 2. Validation (leave one training recording out)
 
-Each row: the model is set with the other two recordings, then checked on this one. This is how we chose the model:
+Each column: the model is set with the other training recordings, then checked on this one.
 
-| Model | p2 | p3 | p4 | all held-out windows |
-|---|---|---|---|---|
-| threshold on the size (counts) | 94% | 82% | 90% | 86% |
-| threshold on the size against rest (chosen) | 93% | 88% | 95% | 91% |
-| logistic regression (size, waveform length) | 94% | 74% | 92% | 83% |
-| decision tree, depth 2 (size, waveform length) | 94% | 57% | 93% | 75% |
+| Model | contracciones1 | contracciones2 | contracciones3 | contracciones4 | all held-out windows |
+|---|---|---|---|---|---|
+| threshold on the size (counts) | 93% | 94% | 92% | 92% | 92% |
+| threshold on the size against rest (chosen) | 95% | 100% | 89% | 89% | 91% |
+| logistic regression (size, waveform length, in counts) | 96% | 100% | 94% | 93% | 94% |
+| logistic regression (size, waveform length, against rest) | 94% | 100% | 91% | 90% | 92% |
+| decision tree, depth 2 (size, waveform length, in counts) | 96% | 100% | 92% | 93% | 94% |
+| decision tree, depth 2 (size, waveform length, against rest) | 93% | 99% | 92% | 93% | 93% |
+
+How we chose. The models "in counts" depend on the scale of the converter, and that scale changed between our sessions (0-1.1 V on 19 Nov, 0-3.1 V on 24 Nov), so they cannot be used on another session. Among the three models "against rest" the scores are 91 % to 93 %, a difference smaller than the change from one recording to the next. We keep the simplest one.
 
 The chosen model in detail:
 
 | Recording | Windows | Accuracy | Balanced accuracy | Movement found | Rest found |
 |---|---|---|---|---|---|
-| p2 | 86 | 87% | 93% | 100% (6/6) | 86% (69/80) |
+| contracciones1 | 273 | 91% | 95% | 100% (45/45) | 89% (204/228) |
+| contracciones2 | 59 | 100% | 100% | 100% (9/9) | 100% (50/50) |
+| contracciones3 | 299 | 91% | 89% | 87% (52/60) | 92% (219/239) |
+| contracciones4 | 271 | 91% | 89% | 86% (44/51) | 92% (202/220) |
+| all | 902 | 91% | 91% | 91% (150/165) | 92% (675/737) |
+
+## 3. Test A: same session, a recording never used to train
+
+| Recording | Windows | Accuracy | Balanced accuracy | Movement found | Rest found |
+|---|---|---|---|---|---|
+| contracciones5 | 199 | 93% | 95% | 97% (35/36) | 93% (151/163) |
+
+## 4. Test B: another session (S01, 19 Nov, other electrode placement)
+
+| Recording | Windows | Accuracy | Balanced accuracy | Movement found | Rest found |
+|---|---|---|---|---|---|
+| p2 | 86 | 88% | 94% | 100% (6/6) | 88% (70/80) |
 | p3 | 332 | 95% | 88% | 75% (54/72) | 100% (260/260) |
-| p4 | 251 | 95% | 95% | 95% (57/60) | 95% (182/191) |
-| all | 669 | 94% | 91% | 85% (117/138) | 96% (511/531) |
+| p4 | 251 | 96% | 93% | 88% (53/60) | 98% (187/191) |
+| p5 | 357 | 93% | 89% | 81% (56/69) | 96% (277/288) |
+| all | 1026 | 94% | 89% | 82% (169/207) | 97% (794/819) |
 
-## 3. Test (a recording the model never saw: p5)
-
-| Recording | Windows | Accuracy | Balanced accuracy | Movement found | Rest found |
-|---|---|---|---|---|---|
-| p5 | 357 | 94% | 91% | 86% (59/69) | 96% (276/288) |
-
-Note: p5 was first opened on 2026-11-23 with an earlier model (one fixed threshold of 2.93 counts, 87 % on p5). After that we changed the model to the one above. We chose the change with the validation table only, but we had already seen p5, so this is not a first look.
-
-## 4. Recording p6, excluded after the test was opened
-
-| Recording | Windows | Accuracy | Balanced accuracy | Movement found | Rest found |
-|---|---|---|---|---|---|
-| p6 | 390 | 89% | 78% | 67% (4/6) | 89% (342/384) |
-| p5 + p6 | 747 | 91% | 88% | 84% (63/75) | 92% (618/672) |
-
-p6 was a test recording when we opened the test. After seeing it we took it out: its rest level is about 3.5 counts (0.6 to 2.1 in the others), and the board marked only 2 of about 12 visible contractions, so its labels are wrong: windows inside real contractions count as rest. With the earlier fixed threshold p6 scored 56 % and p5 + p6 scored 64 %. Taking a recording out after seeing the test makes the test score look better than a fair one.
+Note: these recordings are not new to us. An earlier model was built and tested on them (see the history of this repository), and that is where the idea of measuring the size against the rest level came from. The model above was trained without them, on S02 only.
+p1 (other muscle) and p6 (abnormal rest level and wrong labels, taken out on 2026-11-23 after we saw its score) are not used.
 
 ## What this shows
 
-- Training 93%, validation 91%, test 91% (balanced accuracy). The goal is more than 75 % on recordings never seen.
-- Measuring the size against the rest level of each recording is better than one fixed number of counts, because the rest level changes between recordings (0.6 to 3.5 counts).
-- Limits: one person, one session, labels from the KICK events of the board and not from a cue. The final test needs a cue video and new sessions with new electrodes.
+- Training 92%, validation 91%, test in the same session 95%, test in another session 89% (balanced accuracy). The goal is more than 75 % on sessions never seen.
+- The same number works on two days with different electrodes and a different converter range, because the size is measured against the rest level of each recording.
+- Limits: one person, two sessions, self-paced contractions. The labels come from the KICK events of the board, not from a cue video. The signal rests near the lower limit of the converter, so its lower half is cut.
 
 ## Figures
 
-- `figures/results_confusion.png`: right and wrong answers in training, validation and test.
+- `figures/results_confusion.png`: right and wrong answers in training, validation and the two tests.
 - `figures/results_histogram.png`: the size of the windows of each class against the rest level, and the threshold.
-- `figures/results_test_timeline.png`: what the model says along p5 and p6.
+- `figures/results_test_timeline.png`: what the model says along one test recording of each session.

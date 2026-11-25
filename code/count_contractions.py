@@ -33,5 +33,5 @@ if __name__ == "__main__":
         n = os.path.basename(p)[:-len("_senal.csv")]; r, rest, k = contractions(n); total += len(r)
         with open(p) as f: secs = (sum(1 for _ in f) - 1) / FS
         ml = np.mean([b - a for a, b in r]) if r else 0
-        print(f"| {n[-2:]} | {secs:.0f} | {rest:.2f} | {len(r)} | {ml:.1f} | {k} |")
+        print(f"| {n.split('_')[-1]} | {secs:.0f} | {rest:.2f} | {len(r)} | {ml:.1f} | {k} |")
     print(f"\nTotal: {total} contractions.")

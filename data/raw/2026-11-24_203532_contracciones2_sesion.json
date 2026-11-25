@@ -1,0 +1,22 @@
+{
+ "paciente": "contracciones2",
+ "inicio": "2026-11-24T20:35:32-0600",
+ "fin": "2026-11-24T20:35:52-0600",
+ "fs": 1000,
+ "muestras": 19425,
+ "duracion_s": 19.425,
+ "unidades": "cuentas de 10 bits (0-1023); voltios = cuentas / 1023 * vref",
+ "vref": 3.1,
+ "umbral": [
+  null,
+  null
+ ],
+ "tiros": [
+  0,
+  3
+ ],
+ "canales": {
+  "canal1": "equipo local",
+  "canal2": "equipo rival"
+ }
+}

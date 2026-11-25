@@ -9,6 +9,7 @@ Features of a window:
   0  log of the mean absolute value (MAV), in counts
   1  log of the waveform length
   2  log of (MAV / rest level), where the rest level is the median MAV of the whole recording.
+  3  log of (waveform length / its median in the recording)
      The person rests more than half of the time, so the median is the size of the signal at rest.
 Labels (no cue video on 19 Nov): movement = windows that touch [KICK-0.25 s, KICK+0.25 s] of the
 board; rest = windows more than 1.5 s away from every KICK; the rest of the signal has no label.
@@ -47,15 +48,15 @@ def window_sizes(x):
     """MAV and waveform length of every 0.25 s window of a raw signal, and its rest level."""
     y = clean(x); nw = len(y) // WIN; w = y[:nw * WIN].reshape(nw, WIN)
     mav = np.abs(w).mean(axis=1); wl = np.abs(np.diff(w, axis=1)).sum(axis=1)
-    return mav, wl, float(np.median(mav))
+    return mav, wl, float(np.median(mav)), float(np.median(wl))
 
 def windows(name):
     """Features and labels of the labelled windows of one recording."""
-    x, k = load(name); mav, wl, rest = window_sizes(x)
+    x, k = load(name); mav, wl, rest, rest_wl = window_sizes(x)
     mid = (np.arange(len(mav)) + 0.5) * WIN
     d = np.array([np.min(np.abs(k - c)) for c in mid]) if len(k) else np.full(len(mav), 1e9)
     lab = np.where(d <= 250 + WIN / 2, 1, np.where(d > 1500, 0, -1)); m = lab >= 0
-    return np.c_[np.log(mav + 0.1), np.log(wl + 0.1), np.log(mav / rest)][m], lab[m]
+    return np.c_[np.log(mav + 0.1), np.log(wl + 0.1), np.log(mav / rest), np.log(wl / rest_wl)][m], lab[m]
 
 class Threshold:
     """Movement if one feature is above one number: the middle between the class medians."""
@@ -64,16 +65,20 @@ class Threshold:
         self.t = (np.median(F[L == 1, self.col]) + np.median(F[L == 0, self.col])) / 2; return self
     def predict(self, F): return (F[:, self.col] > self.t).astype(int)
 
-class First2:
-    """A scikit-learn model that sees only the first two features."""
-    def __init__(self, m): self.m = m
-    def fit(self, F, L): self.m.fit(F[:, :2], L); return self
-    def predict(self, F): return self.m.predict(F[:, :2])
+class Cols:
+    """A scikit-learn model that sees only some of the features."""
+    def __init__(self, m, cols): self.m, self.cols = m, cols
+    def fit(self, F, L): self.m.fit(F[:, self.cols], L); return self
+    def predict(self, F): return self.m.predict(F[:, self.cols])
+
+def short(name): return name.split("_")[-1]
 
 MODELS = {"threshold on the size (counts)": lambda: Threshold(0),
           "threshold on the size against rest": lambda: Threshold(2),
-          "logistic regression (size, waveform length)": lambda: First2(LogisticRegression(class_weight="balanced")),
-          "decision tree, depth 2 (size, waveform length)": lambda: First2(DecisionTreeClassifier(max_depth=2, class_weight="balanced", random_state=0))}
+          "logistic regression (size, waveform length, in counts)": lambda: Cols(LogisticRegression(class_weight="balanced"), [0, 1]),
+          "logistic regression (size, waveform length, against rest)": lambda: Cols(LogisticRegression(class_weight="balanced"), [2, 3]),
+          "decision tree, depth 2 (size, waveform length, in counts)": lambda: Cols(DecisionTreeClassifier(max_depth=2, class_weight="balanced", random_state=0), [0, 1]),
+          "decision tree, depth 2 (size, waveform length, against rest)": lambda: Cols(DecisionTreeClassifier(max_depth=2, class_weight="balanced", random_state=0), [2, 3])}
 CHOSEN = "threshold on the size against rest"      # the best in validation; see the table this script prints
 
 def validate(make, train, data):
@@ -88,7 +93,7 @@ if __name__ == "__main__":
     for n, (F, L) in data.items():
         print(f"{n}: {int(L.sum())} movement windows, {int((L == 0).sum())} rest windows")
     print("\nLeave one recording out (balanced accuracy):")
-    print("| Model | " + " | ".join(n[-2:] for n in train) + " | all held-out windows |"); print("|---|" + "---|" * (len(train) + 1))
+    print("| Model | " + " | ".join(short(n) for n in train) + " | all held-out windows |"); print("|---|" + "---|" * (len(train) + 1))
     for label, make in MODELS.items():
         per, yt, yp = validate(make, train, data)
         print(f"| {label} | " + " | ".join(f"{balanced_accuracy_score(*per[n]):.0%}" for n in train) + f" | {balanced_accuracy_score(yt, yp):.0%} |")

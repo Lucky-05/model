@@ -1,17 +1,18 @@
 {
  "model": "threshold on the size against rest",
  "trained_on": [
-  "2026-11-19_101935_p2",
-  "2026-11-19_105551_p3",
-  "2026-11-19_110757_p4"
+  "2026-11-24_203041_contracciones1",
+  "2026-11-24_203532_contracciones2",
+  "2026-11-24_204315_contracciones3",
+  "2026-11-24_205100_contracciones4"
  ],
  "window_s": 0.25,
  "filters": "Butterworth 4 band-pass 20-450 Hz + notch 60 Hz Q30, zero phase",
  "rest_level": "median of the mean absolute value of all the 0.25 s windows of the recording (or of a calibration at rest)",
  "rule": "movement if the mean absolute value of the window is above ratio x rest level",
- "ratio": 2.021,
+ "ratio": 2.443,
  "windows": {
-  "movement": 138,
-  "rest": 531
+  "movement": 165,
+  "rest": 737
  }
 }
